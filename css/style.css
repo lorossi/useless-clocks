@@ -3,6 +3,16 @@
   src: url(fonts/Roboto-Light.ttf);
 }
 
+@font-face {
+  font-family: HackBold;
+  src: url(fonts/Hack-Bold.ttf);
+}
+
+body {
+  color: var(--text-color);
+  background-color: var(--background-color);
+}
+
 * {
   margin: 0;
   padding: 0;
