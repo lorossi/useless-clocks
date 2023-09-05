@@ -39,8 +39,8 @@ a:active {
 }
 
 #sketch {
-  height: 90vh;
-  width: 90vh;
+  height: 95vh;
+  width: 95vh;
   aspect-ratio: 1;
 
   touch-action: none;
@@ -49,6 +49,7 @@ a:active {
 .footer {
   position: absolute;
   width: 100vw;
+  bottom: 0;
 
   display: flex;
   flex-direction: row;
@@ -62,11 +63,6 @@ a:active {
 }
 
 @media only screen and (max-width: 600px) {
-  #sketch {
-    height: 90vw;
-    width: 90vw;
-  }
-
   .footer {
     justify-content: space-around;
   }
