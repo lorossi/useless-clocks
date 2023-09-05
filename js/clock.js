@@ -770,6 +770,66 @@ class LinesBinaryClock extends Clock {
   }
 }
 
+class MultipleCirclesClock extends Clock {
+  drawClock(ctx) {
+    const time_array = this.normalizeDate(this.date);
+
+    ctx.save();
+    ctx.translate(this.width / 2, this.height / 2);
+    ctx.scale(this.scl, this.scl);
+    ctx.strokeStyle = this.white;
+    ctx.lineWidth = 4;
+
+    time_array.forEach((t) => {
+      const r = (t * this.width) / 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.stroke();
+    });
+
+    ctx.restore();
+  }
+
+  get title() {
+    return "Multiple Circles Clock";
+  }
+}
+
+class XOR128Clock extends Clock {
+  preload() {
+    this._cols = 20;
+    this._rows = 20;
+    this._scl = Math.min(this.width / this._cols, this.height / this._rows);
+  }
+
+  drawClock(ctx) {
+    const rng = new XOR128(this.date.getTime());
+
+    for (let x = 0; x < this._cols; x++) {
+      for (let y = 0; y < this._rows; y++) {
+        const a = rng.random_bool() ? Math.PI / 4 : -Math.PI / 4;
+        ctx.save();
+        ctx.translate((x + 0.5) * this._scl, (y + 0.5) * this._scl);
+        ctx.scale(this.scl, this.scl);
+        ctx.rotate(a);
+        ctx.strokeStyle = this.white;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-this._scl / 2, 0);
+        ctx.lineTo(this._scl / 2, 0);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    this._last_update = this.date.getTime();
+  }
+
+  get title() {
+    return "XOR128 Clock";
+  }
+}
+
 export {
   BarClock,
   BinaryClock,
@@ -779,6 +839,7 @@ export {
   LinesBinaryClock,
   LinesClock,
   ModulatesSineClock,
+  MultipleCirclesClock,
   OnlyOneRightClock,
   PolygonClock,
   ShuffledClock,
@@ -788,4 +849,5 @@ export {
   SmallSquaresClock,
   SquaresClock,
   TriangleClock,
+  XOR128Clock,
 };
