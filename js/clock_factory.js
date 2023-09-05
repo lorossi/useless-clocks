@@ -2,12 +2,16 @@ import {
   BarClock,
   BinaryClock,
   CircleClock,
+  FrequencySineClock,
   GearClock,
+  LinesBinaryClock,
   LinesClock,
+  ModulatesSineClock,
   OnlyOneRightClock,
   PolygonClock,
-  RandomClock,
+  ShuffledClock,
   SineClock,
+  SmallCirclesClock,
   SmallLinesClock,
   SmallSquaresClock,
   SquaresClock,
@@ -15,9 +19,14 @@ import {
 } from "./clock.js";
 
 const CLOCKS_MAP = {
+  small_lines: SmallLinesClock,
+  lines_binary: LinesBinaryClock,
+  small_circles: SmallCirclesClock,
+  frequency_sine: FrequencySineClock,
+  shuffled: ShuffledClock,
+  modulates_sines: ModulatesSineClock,
   polygon: PolygonClock,
   only_one_right: OnlyOneRightClock,
-  small_lines: SmallLinesClock,
   small_squares: SmallSquaresClock,
   squares: SquaresClock,
   lines: LinesClock,
@@ -25,7 +34,6 @@ const CLOCKS_MAP = {
   binary: BinaryClock,
   circle: CircleClock,
   gear: GearClock,
-  random: RandomClock,
   triangle: TriangleClock,
   sine: SineClock,
 };
@@ -35,14 +43,21 @@ class ClockFactory {
     this._index = 0;
   }
 
-  createNext() {
+  createNext(width = 1000, height = 1000) {
     const type = ClockFactory.types[this._index];
     this._index = (this._index + 1) % ClockFactory.types.length;
-    return ClockFactory.create(type);
+    return ClockFactory.create(type, width, height);
   }
 
-  static create(type) {
-    if (type in CLOCKS_MAP) return new CLOCKS_MAP[type]();
+  createPrevious(width = 1000, height = 1000) {
+    const type = ClockFactory.types[this._index];
+    this._index -= 1;
+    if (this._index < 0) this._index = ClockFactory.types.length - 1;
+    return ClockFactory.create(type, width, height);
+  }
+
+  static create(type, width = 1000, height = 1000) {
+    if (type in CLOCKS_MAP) return new CLOCKS_MAP[type](width, height);
 
     throw new TypeError(`Invalid clock type: ${type}`);
   }
