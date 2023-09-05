@@ -4,6 +4,8 @@ import {
   CircleClock,
   GearClock,
   LinesClock,
+  OnlyOneRightClock,
+  PolygonClock,
   RandomClock,
   SineClock,
   SmallLinesClock,
@@ -13,6 +15,8 @@ import {
 } from "./clock.js";
 
 const CLOCKS_MAP = {
+  polygon: PolygonClock,
+  only_one_right: OnlyOneRightClock,
   small_lines: SmallLinesClock,
   small_squares: SmallSquaresClock,
   squares: SquaresClock,

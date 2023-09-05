@@ -13,9 +13,9 @@ class Clock {
     this.scl = 0.9;
     this.white = this._loadCSSVar("text-color");
     this.black = this._loadCSSVar("background-color");
+    this._renamePage();
 
     this.preload();
-    this.renamePage();
   }
 
   _loadCSSVar(name) {
@@ -37,9 +37,9 @@ class Clock {
     // optional
   }
 
-  renamePage() {
+  _renamePage() {
     const title = document.querySelector("title");
-    title.textContent = this.constructor.name;
+    title.textContent = this.title;
   }
 
   show(ctx) {
@@ -78,6 +78,10 @@ class Clock {
   easeInOutPoly(x, n = 5) {
     if (x < 0.5) return Math.pow(2 * x, n) / 2;
     return 1 - Math.pow(2 * (1 - x), n) / 2;
+  }
+
+  get title() {
+    return this.constructor.name;
   }
 }
 
@@ -138,6 +142,10 @@ class SineClock extends Clock {
       this._pasteImage(ctx, c, y, w);
     });
   }
+
+  get title() {
+    return "Sine Clock";
+  }
 }
 
 class TriangleClock extends Clock {
@@ -189,6 +197,10 @@ class BarClock extends Clock {
       ctx.restore();
     }
   }
+
+  get title() {
+    return "Bar Clock";
+  }
 }
 
 class CircleClock extends Clock {
@@ -219,6 +231,10 @@ class CircleClock extends Clock {
       ctx.restore();
     }
   }
+
+  get title() {
+    return "Circle Clock";
+  }
 }
 
 class BinaryClock extends Clock {
@@ -244,16 +260,17 @@ class BinaryClock extends Clock {
 
     ctx.restore();
   }
+
+  get title() {
+    return "Binary Clock";
+  }
 }
 
 class RandomClock extends Clock {
-  preload() {
-    this._random = new XOR128();
-  }
-
   drawClock(ctx) {
     const time_str = this.date.toISOString().replace(/[TZ]/g, "");
-    const scrambled = this._random.shuffle_string(time_str);
+    const random = new XOR128(this.date.getTime());
+    const scrambled = random.shuffle_string(time_str);
 
     ctx.save();
     ctx.textAlign = "center";
@@ -263,6 +280,10 @@ class RandomClock extends Clock {
     ctx.translate(this.width / 2, this.height / 2);
     ctx.fillText(scrambled, 0, 0);
     ctx.restore();
+  }
+
+  get title() {
+    return "Random Clock";
   }
 }
 
@@ -297,6 +318,10 @@ class GearClock extends Clock {
       ctx.restore();
     }
   }
+
+  get title() {
+    return "Gear Clock";
+  }
 }
 
 class LinesClock extends Clock {
@@ -322,6 +347,10 @@ class LinesClock extends Clock {
 
       ctx.restore();
     }
+  }
+
+  get title() {
+    return "Lines Clock";
   }
 }
 
@@ -351,6 +380,10 @@ class SquaresClock extends Clock {
       ctx.restore();
     }
   }
+
+  get title() {
+    return "Squares Clock";
+  }
 }
 
 class SmallSquaresClock extends Clock {
@@ -372,7 +405,7 @@ class SmallSquaresClock extends Clock {
         ctx.save();
         ctx.translate(x + inner_size / 2, inner_size / 2);
         ctx.scale(this.scl, this.scl);
-        ctx.rotate(time_array[i] * Math.PI * 2);
+        ctx.rotate((time_array[i] * Math.PI) / 2);
 
         ctx.fillStyle = this.white;
         ctx.lineWidth = 4;
@@ -383,6 +416,10 @@ class SmallSquaresClock extends Clock {
 
       ctx.restore();
     }
+  }
+
+  get title() {
+    return "Small Squares Clock";
   }
 }
 
@@ -416,6 +453,115 @@ class SmallLinesClock extends Clock {
       ctx.restore();
     }
   }
+
+  get title() {
+    return "Small Lines Clock";
+  }
+}
+
+class OnlyOneRightClock extends Clock {
+  preload() {
+    this._cols = 7;
+    this._rng = new XOR128();
+
+    const right_x = this._rng.random_int(this._cols);
+    const right_y = this._rng.random_int(this._cols);
+
+    this._offsets = Array(this._cols * this._cols)
+      .fill()
+      .map((_, i) => {
+        const x = i % this._cols;
+        const y = Math.floor(i / this._cols);
+        if (x === right_x && y === right_y) return Array(4).fill(0);
+        return Array(4)
+          .fill()
+          .map(() => this._rng.random(-1, 1));
+      });
+  }
+
+  drawClock(ctx) {
+    const time_array = this.normalizeDate(this.date);
+    const size = this.height / this._cols;
+
+    for (let x = 0; x < this._cols; x++) {
+      for (let y = 0; y < this._cols; y++) {
+        const i = x + y * this._cols;
+
+        ctx.save();
+        ctx.translate(x * size + size / 2, y * size + size / 2);
+        ctx.scale(this.scl, this.scl);
+        ctx.strokeStyle = this.white;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.stroke();
+
+        for (let j = 0; j < 4; j++) {
+          const len = (((size / 2) * (4 - j + 1)) / 5) * this.scl;
+          const angle = (time_array[j] + this._offsets[i][j]) * Math.PI * 2;
+
+          ctx.save();
+          ctx.strokeStyle = this.white;
+          ctx.lineWidth = 2;
+          ctx.rotate(angle);
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(len, 0);
+          ctx.closePath();
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.restore();
+      }
+    }
+  }
+
+  get title() {
+    return "Only One is Right";
+  }
+}
+
+class PolygonClock extends Clock {
+  drawClock(ctx) {
+    const time = this.unpackDate(this.date);
+    const sides = [
+      Math.floor(time.milliseconds / 10),
+      Math.floor(time.seconds),
+      Math.floor(time.minutes),
+      Math.floor(time.hours),
+    ];
+
+    const size = this.width / 2;
+    for (let i = 0; i < 4; i++) {
+      const x = i % 2;
+      const y = Math.floor(i / 2);
+
+      ctx.save();
+      ctx.translate((x + 0.5) * size, (y + 0.5) * size);
+      ctx.scale(this.scl, this.scl);
+
+      ctx.fillStyle = this.white;
+      ctx.strokeStyle = this.white;
+      ctx.lineWidth = 4;
+
+      ctx.beginPath();
+      ctx.moveTo(0, size / 2);
+      for (let j = 0; j < sides[i]; j++) {
+        const theta = (j / sides[i]) * Math.PI * 2;
+        ctx.lineTo((Math.sin(theta) * size) / 2, (Math.cos(theta) * size) / 2);
+      }
+      ctx.closePath();
+      ctx.stroke();
+
+      ctx.restore();
+    }
+  }
+
+  get title() {
+    return "Polygon Clock";
+  }
 }
 
 export {
@@ -424,6 +570,8 @@ export {
   CircleClock,
   GearClock,
   LinesClock,
+  OnlyOneRightClock,
+  PolygonClock,
   RandomClock,
   SineClock,
   SmallLinesClock,
