@@ -336,8 +336,8 @@ class BinaryClock extends Clock {
 class ShuffledClock extends Clock {
   drawClock(ctx) {
     const time_str = this.date.toISOString().replace(/[TZ]/g, "");
-    const random = new XOR128(this.date.getTime());
-    const scrambled = random.shuffle_string(time_str);
+    this._rng = new XOR128(this.date.getTime());
+    const scrambled = this._rng.shuffle_string(time_str);
     const size = 160;
 
     ctx.save();
@@ -407,27 +407,34 @@ class GearClock extends Clock {
 }
 
 class LinesClock extends Clock {
+  preload() {
+    this._rng = new XOR128();
+    this._directions = Array(4)
+      .fill()
+      .map(() => this._rng.random_int(-1, 1));
+  }
+
   drawClock(ctx) {
     const time_array = this.normalizeDate(this.date);
 
+    ctx.save();
+    ctx.translate(this.width / 2, this.height / 2);
+    ctx.scale(this.scl, this.scl);
+    ctx.strokeStyle = this.white;
+    ctx.lineWidth = 4;
     for (let i = 0; i < 4; i++) {
-      const theta = time_array[i] * Math.PI * 2;
+      const theta = time_array[i] * Math.PI * 2 * this._directions[i];
       const r = this.width / 2;
 
       ctx.save();
-      ctx.translate(this.width / 2, this.height / 2);
       ctx.rotate(theta);
-      ctx.scale(this.scl, this.scl);
-
-      ctx.strokeStyle = this.white;
-      ctx.lineWidth = 4;
       ctx.beginPath();
       ctx.moveTo(-r, 0);
       ctx.lineTo(r, 0);
       ctx.stroke();
-
       ctx.restore();
     }
+    ctx.restore();
   }
 
   get title() {
@@ -656,11 +663,11 @@ class PolygonClock extends Clock {
 class SmallCirclesClock extends Clock {
   preload() {
     this._max_amount = [100, 60, 60, 24];
-    const random = new XOR128();
+    this._rng = new XOR128();
     this._order = Array(4)
       .fill()
       .map((_, i) =>
-        random.shuffle_array(
+        this._rng.shuffle_array(
           Array(this._max_amount[i])
             .fill()
             .map((_, j) => j)
