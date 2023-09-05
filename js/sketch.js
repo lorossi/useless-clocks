@@ -27,8 +27,22 @@ class Sketch extends Engine {
     this.ctx.restore();
   }
 
-  click() {
-    this._clock = this._clockFactory.createNext();
+  click(x, y) {
+    if (x < this.width / 2) this._clock = this._clockFactory.createNext();
+    else this._clock = this._clockFactory.createPrevious();
+  }
+
+  keyPress(key, _) {
+    switch (key) {
+      case "e":
+        this._clock = this._clockFactory.createNext();
+        break;
+      case "q":
+        this._clock = this._clockFactory.createPrevious();
+        break;
+      default:
+        break;
+    }
   }
 }
 
