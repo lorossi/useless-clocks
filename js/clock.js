@@ -83,6 +83,10 @@ class Clock {
   get title() {
     return this.constructor.name;
   }
+
+  get description() {
+    return "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl eget ultricies ultricies, nunc nisl ultricies nunc, vitae ultricies nisl nisl eget nisl. Nullam auctor, nisl eget ultricies ultricies, nunc nisl ultricies nunc, vitae ultricies nisl nisl eget nisl.";
+  }
 }
 
 class SineClock extends Clock {
