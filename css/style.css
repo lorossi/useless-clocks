@@ -22,6 +22,7 @@ body {
 
 a {
   user-select: none;
+  color: var(--links-color);
 }
 
 a:visited,
@@ -59,11 +60,55 @@ a:active {
 
 .footer * {
   padding: 1rem;
-  font-size: 1.5rem;
+  font-size: 1rem;
 }
 
 @media only screen and (max-width: 600px) {
   .footer {
     justify-content: space-around;
   }
+}
+
+#description {
+  user-select: none;
+  color: var(--white);
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 2rem;
+}
+
+#description-container {
+  color: var(--white);
+  background-color: var(--black);
+  user-select: none;
+
+  border: 4px solid var(--white);
+  border-radius: 4px;
+  padding: var(--text-size);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  z-index: 1000;
+}
+
+#description-container #close-button {
+  user-select: none;
+  cursor: pointer;
+  margin-top: var(--text-size);
+  text-decoration: underline;
+}
+
+#description-container #close-button:hover {
+  color: var(--gray);
+}
+
+.faded {
+  filter: blur(4px) saturate(0.25);
+}
+
+.hidden {
+  display: none !important;
 }

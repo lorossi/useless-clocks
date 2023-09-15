@@ -5,6 +5,7 @@
 
   --background-color: var(--black);
   --text-color: var(--white);
+  --links-color: var(--gray);
   --visited-link-color: var(--gray);
 
   --text-size: 1.5rem;
