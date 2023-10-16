@@ -26,14 +26,16 @@ class Engine {
     this._fps = fps;
 
     // init variables
-    this._frameCount = 0;
-    this._actualFrameRate = 0;
-    this._noLoop = false;
+    this._frame_count = 0;
+    this._no_loop = false;
     this._then = null;
     this._is_recording = false;
     this._first_frame_recorded = 0;
     this._frames_recorded = 0;
     this._zip = null;
+
+    // actual framerate buffer
+    this._fps_buffer = new CircularBuffer(60);
 
     // mouse coordinates
     this._mouseCoords = new Point(0, 0);
@@ -54,7 +56,7 @@ class Engine {
     // save fps value
     this._fps = fps;
     // time between frames
-    this._fps_interval = 1 / this._fps;
+    this._fps_interval = 1000 / this._fps;
   }
 
   /**
@@ -77,13 +79,14 @@ class Engine {
   _timeDraw() {
     window.requestAnimationFrame(this._timeDraw.bind(this));
 
-    if (!this._then) this._then = performance.now();
+    if (this._no_loop) return;
+    if (this._then == null) {
+      this._then = performance.now();
+      return;
+    }
 
     // time calculations
-    const now = performance.now();
-    const diff = (now - this._then) / 1000;
-    // is it time to draw the next frame?
-    if (diff < this._fps_interval || this._noLoop) return;
+    while (performance.now() - this._then < this._fps_interval) {}
 
     // now draw
     this._ctx.save();
@@ -92,7 +95,7 @@ class Engine {
     // save current frame if recording
     if (this._is_recording) {
       // compute frame name
-      const frame_count = this._frameCount - this._first_frame_recorded;
+      const frame_count = this._frame_count - this._first_frame_recorded;
       const filename = frame_count.toString().padStart(7, 0) + ".png";
       // extract data from canvas
       const data = this._canvas.toDataURL("image/png").split(";base64,")[1];
@@ -101,27 +104,27 @@ class Engine {
       // update the count of recorded frames
       this._frames_recorded++;
     }
-
     // update frame count
-    this._frameCount++;
-    // updated last frame rendered time
-    this._then = now - (diff % this._fps_interval);
-    // update framerate getter
-    this._actualFrameRate = 1 / diff;
+    this._frame_count++;
+    // update framerate buffer
+    const ended = performance.now();
+    this._fps_buffer.push(1000 / (ended - this._then));
+    // update current time
+    this._then = ended;
   }
 
   /**
    * Starts looping the script
    */
   loop() {
-    this._noLoop = false;
+    this._no_loop = false;
   }
 
   /**
    * Stops looping the script
    */
   noLoop() {
-    this._noLoop = true;
+    this._no_loop = true;
   }
 
   /**
@@ -129,7 +132,7 @@ class Engine {
    */
   startRecording() {
     this._is_recording = true;
-    this._first_frame_recorded = this._frameCount;
+    this._first_frame_recorded = this._frame_count;
     this._frames_recorded = 0;
     this._zip = new JSZip();
   }
@@ -167,7 +170,7 @@ class Engine {
    */
   saveFrame(title = null) {
     if (title == null)
-      title = "frame-" + this._frameCount.toString().padStart(6, 0);
+      title = "frame-" + this._frame_count.toString().padStart(6, 0);
 
     this._downloadFile(title, this._canvas.toDataURL("image/png"));
   }
@@ -347,7 +350,7 @@ class Engine {
 
   /**
    * Set the background color for the canvas
-   * @param {String | Number} color
+   * @param {string | number} color
    */
   background(color) {
     // reset background
@@ -355,7 +358,9 @@ class Engine {
     // reset canvas
     this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
     // set background
-    this._ctx.fillStyle = color;
+    if (typeof color === "number")
+      this._ctx.fillStyle = Color.fromMonochrome(color).rgba;
+    else this._ctx.fillStyle = color;
     this._ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
     this._ctx.restore();
   }
@@ -404,7 +409,7 @@ class Engine {
    * @returns {number} The number of total frames
    */
   get frameCount() {
-    return this._frameCount;
+    return this._frame_count;
   }
 
   /**
@@ -412,7 +417,7 @@ class Engine {
    * @returns {number} The current fps
    */
   get frameRate() {
-    return this._actualFrameRate;
+    return this._fps_buffer.average;
   }
 
   /**
@@ -470,38 +475,27 @@ class Engine {
 /** Class containing colors, either RGB or HSL */
 class Color {
   /**
-   * Create a color by setting the value of its channels.
-   * Can be either RGB or HSL
-   * @param {number} [a=0] The value of the first channel (red for RGB, hue for HSL)
-   * @param {number} [b=0] The value of the second channel (green for RGB, saturation for HSL)
-   * @param {number} [c=0] The value of the third channel (blue for RGB, lighting for HSL)
-   * @param {number} [d=1] The value of the alpha channel
-   * @param {Boolean} [rgb=true] If true, color will be interpreted as RGB. Otherwise, it will be interpreted as HSL
+   * Create a color by setting the value of its RGB channels.
+   * @param {number} [r=0] The value of the Red channel in range [0, 255]
+   * @param {number} [g=0] The value of the Green channel in range [0, 255]
+   * @param {number} [b=0] The value of the Blue channel in range [0, 255]
+   * @param {number} [a=1] The value of the Alpha channel in range [0, 1]
    */
-  constructor(a = 0, b = 0, c = 0, d = 1, rgb = true) {
-    if (rgb) {
-      this._r = a;
-      this._g = b;
-      this._b = c;
-      this._a = d;
+  constructor(r = 0, g = 0, b = 0, a = 1) {
+    this._r = r;
+    this._g = g;
+    this._b = b;
+    this._a = a;
 
-      this._h = undefined;
-      this._s = undefined;
-      this._l = undefined;
-      this._toHsl();
-    } else {
-      this._h = a;
-      this._s = b;
-      this._l = c;
-      this._a = d;
-
-      this._r = undefined;
-      this._g = undefined;
-      this._b = undefined;
-      this._toRgb();
-    }
+    this._toHsl();
   }
 
+  /**
+   * Checks if two colors are equal
+   * @param {Color} other
+   * @param {Boolean} [compare_alpha=true] If true, the alpha channel will be compared too
+   * @returns {Boolean}
+   */
   equals(other, compare_alpha = true) {
     const epsilon = 0.0001;
     const float_eq = (a, b) => Math.abs(a - b) < epsilon;
@@ -514,25 +508,93 @@ class Color {
   }
 
   /**
-   * Sets a color hue, saturation and lighting values
-   * @param {number} h Color hue
-   * @param {number} s Color saturation
-   * @param {number} l Color lighting
-   * @static
+   * Returns the color as a string
+   * @returns {string}
    */
-  static fromHSL(h, s, l) {
-    return new Color(h, s, l, 1, false);
+  toString() {
+    return this.hex;
   }
 
   /**
-   * Sets a color red, green and blue channels values
-   * @param {number} r Red value
-   * @param {number} g Green value
-   * @param {number} b Blue value
-   * @static
+   * Mix two colors, returning a new color.
+   * Optionally, an easing function can be passed to control the mix.
+   *
+   * @param {Color} other
+   * @param {number} amount
+   * @param {function} [easing=null]
    */
-  fromRGB(r, g, b) {
-    return new Color(r, g, b, 1, true);
+  mix(other, amount, easing = null) {
+    const t = easing ? easing(amount) : amount;
+    const r = this._r + t * (other.r - this._r);
+    const g = this._g + t * (other.g - this._g);
+    const b = this._b + t * (other.b - this._b);
+    const a = this._a + t * (other.a - this._a);
+    return new Color(r, g, b, a);
+  }
+
+  /**
+   * Create a color from HSL values
+   * @param {number} h Color hue in range [0, 360]
+   * @param {number} s Color saturation in range [0, 100]
+   * @param {number} l Color lighting in range [0, 100]
+   * @param {number} a Color alpha in range [0, 1]
+   * @static
+   * @returns {Color}
+   */
+  static fromHSL(h, s, l, a) {
+    const dummy = new Color();
+    dummy._h = h;
+    dummy._s = s;
+    dummy._l = l;
+    dummy._toRgb();
+    return new Color(dummy._r, dummy._g, dummy._b, a);
+  }
+
+  /**
+   * Create a color from RGB values
+   * @param {number} r Red channel value in range [0, 360]
+   * @param {number} g Green channel value in range [0, 360]
+   * @param {number} b Blue channel value in range [0, 360]
+   * @param {number} a Alpha channel value in range [0, 1]
+   * @static
+   * @returns {Color}
+   */
+  static fromRGB(r, g, b, a) {
+    return new Color(r, g, b, a);
+  }
+
+  /**
+   * Create a color from a hexadecimal string
+   * @param {string} hex
+   * @static
+   * @returns {Color}
+   */
+  static fromHEX(hex) {
+    // regex to extract r, g, b, a values from hex string
+    const regex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i;
+    // extract values from hex string
+    const [, r, g, b, a] = regex.exec(hex);
+
+    // convert values to decimal
+    const dr = parseInt(r, 16);
+    const dg = parseInt(g, 16);
+    const db = parseInt(b, 16);
+    const da = a ? parseInt(a, 16) : 1;
+
+    // return color
+    return new Color(dr, dg, db, da);
+  }
+
+  /**
+   * Create a monochrome color from a decimal value
+   *
+   * @param {number} ch Red, green and blue value in range [0, 255]
+   * @param {number} [a=1] Alpha value in range [0, 1], defaults to 1
+   * @static
+   * @returns {Color}
+   */
+  static fromMonochrome(ch, a = 1) {
+    return new Color(ch, ch, ch, a);
   }
 
   /**
@@ -900,6 +962,7 @@ class SimplexNoise {
     // set the octaves and falloff
     this._octaves = 1;
     this._falloff = 0.5;
+    this._max_value = this._calculateMaxValue();
   }
 
   /**
@@ -943,7 +1006,7 @@ class SimplexNoise {
       freq *= 1 / this._falloff;
     }
 
-    return n;
+    return n / this._max_value;
   }
 
   /**
@@ -954,6 +1017,15 @@ class SimplexNoise {
   setDetail(octaves = 1, falloff = 0.5) {
     this._octaves = octaves;
     this._falloff = falloff;
+
+    this._max_value = this._calculateMaxValue();
+  }
+
+  _calculateMaxValue() {
+    let max_value = 0;
+    for (let i = 0; i < this._octaves; i++) max_value += this._falloff ** i;
+
+    return max_value;
   }
 
   /**
@@ -961,6 +1033,7 @@ class SimplexNoise {
    */
   set octaves(o) {
     this._octaves = o;
+    this._max_value = this._calculateMaxValue();
   }
 
   /**
@@ -976,6 +1049,7 @@ class SimplexNoise {
    */
   set falloff(f) {
     this._falloff = f;
+    this._max_value = this._calculateMaxValue();
   }
 
   /**
@@ -984,6 +1058,54 @@ class SimplexNoise {
    */
   get falloff() {
     return this._falloff;
+  }
+
+  /**
+   * Get the maximum value of the noise
+   * @returns {number} Maximum value
+   */
+  get max_value() {
+    return this._max_value;
+  }
+
+  /**
+   * Get the minimum value of the noise
+   * @returns {number} Minimum value
+   */
+  get min_value() {
+    return -this.max_value;
+  }
+}
+
+/** Class for a circular buffer */
+class CircularBuffer {
+  /**
+   *
+   * @param {number} size of the buffer
+   */
+  constructor(size) {
+    this._buffer = new Array(size).fill(null);
+    this._size = size;
+    this._index = 0;
+  }
+
+  /**
+   * Add a value to the buffer
+   * @param {number} value
+   */
+  push(value) {
+    this._buffer[this._index] = value;
+    this._index = (this._index + 1) % this._size;
+  }
+
+  /**
+   * Get the average of the buffer
+   */
+  get average() {
+    const items = this._buffer.filter((x) => x != null);
+    if (items.length == 0) return 0;
+
+    return items.reduce((a, b) => a + b, 0) / items.length;
   }
 }
 
