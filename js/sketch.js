@@ -39,7 +39,7 @@ class Sketch extends Engine {
   click(x, y) {
     if (this._description.visible) return;
 
-    if (x < this.width / 2) this._clock = this._clockFactory.createNext();
+    if (x > this.width / 5) this._clock = this._clockFactory.createNext();
     else this._clock = this._clockFactory.createPrevious();
   }
 
