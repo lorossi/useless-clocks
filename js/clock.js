@@ -13,9 +13,13 @@ class Clock {
     this.scl = 0.9;
     this.white = this._loadCSSVar("white");
     this.black = this._loadCSSVar("black");
+
+    const seed = new Date().getTime();
+    this.rng = new XOR128(seed);
     this._renamePage();
 
     this.preload();
+    console.log(this.description);
   }
 
   _loadCSSVar(name) {
@@ -85,7 +89,7 @@ class Clock {
   }
 
   get description() {
-    return "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl eget ultricies ultricies, nunc nisl ultricies nunc, vitae ultricies nisl nisl eget nisl. Nullam auctor, nisl eget ultricies ultricies, nunc nisl ultricies nunc, vitae ultricies nisl nisl eget nisl.";
+    return null;
   }
 }
 
@@ -125,13 +129,11 @@ class SineClock extends Clock {
 
   preload() {
     const frequencies = [1, 60, 60, 24];
-    this._sub_canvases = Array(frequencies.length)
-      .fill()
-      .map((_, i) => {
-        const c = this.createSubCanvases();
-        this.drawSineCanvas(c, frequencies[i]);
-        return c;
-      });
+    this._sub_canvases = new Array(frequencies.length).fill().map((_, i) => {
+      const c = this.createSubCanvases();
+      this.drawSineCanvas(c, frequencies[i]);
+      return c;
+    });
   }
 
   pasteImage(ctx, canvas, y, w) {
@@ -155,6 +157,10 @@ class SineClock extends Clock {
 
   get title() {
     return "Sine Clock";
+  }
+
+  get description() {
+    return "This clock makes use of the Sine trigonometric function to represent the time. Each line represents a different unit of time, from milliseconds to hours. The length of each line is proportional to the current time. The frequency of the sine wave is also proportional to the unit of time, so the milliseconds line has a frequency of 1, the seconds line has a frequency of 60, the minutes line has a frequency of 60, and the hours line has a frequency of 24.";
   }
 }
 
@@ -183,20 +189,20 @@ class ModulatesSineClock extends SineClock {
   get title() {
     return "Modulates Sines Clock";
   }
+
+  get description() {
+    return "This clock is similar to the Sine Clock, but the sine waves are modulated by another sine wave. Each line still represents a different unit of time, but the created shape is more interesting.";
+  }
 }
 
 class FrequencySineClock extends ModulatesSineClock {
   preload() {
-    const frequencies = Array(100)
-      .fill()
-      .map((_, i) => i + 1);
-    this._sub_canvases = Array(frequencies.length)
-      .fill()
-      .map((_, i) => {
-        const c = this.createSubCanvases();
-        this.drawSineCanvas(c, frequencies[i]);
-        return c;
-      });
+    const frequencies = new Array(100).fill().map((_, i) => i + 1);
+    this._sub_canvases = new Array(frequencies.length).fill().map((_, i) => {
+      const c = this.createSubCanvases();
+      this.drawSineCanvas(c, frequencies[i]);
+      return c;
+    });
   }
 
   drawClock(ctx) {
@@ -219,6 +225,10 @@ class FrequencySineClock extends ModulatesSineClock {
 
   get title() {
     return "Frequency Sine Clock";
+  }
+
+  get description() {
+    return "This clock is similar to the other one using sines to tell the time, but the actual time is represented by the frequency of each sine wave and not by its length. It is very similar to the other sinusoidal clocks, but it is also very different. It is one of my favourites.";
   }
 }
 
@@ -243,6 +253,14 @@ class TriangleClock extends Clock {
       ctx.stroke();
       ctx.restore();
     }
+  }
+
+  get title() {
+    return "Triangle Clock";
+  }
+
+  get description() {
+    return "This clock is similar to the Bar Clock, but instead of using bars, it uses triangles. Each triangle represents a different unit of time, from milliseconds (left) to hours (right). The triangles get filled over time, giving almost the idea of being able to read what it is actually shown. Almost.";
   }
 }
 
@@ -273,6 +291,10 @@ class BarClock extends Clock {
 
   get title() {
     return "Bar Clock";
+  }
+
+  get description() {
+    return "This is probably one of the most readable clocks (this really tells a lot). Each bar fills up proportionally to the current time, from milliseconds (left) to hours (right). The bars get filled over time, giving almost the idea of being able to read what it is actually shown.";
   }
 }
 
@@ -307,6 +329,10 @@ class CircleClock extends Clock {
   get title() {
     return "Circle Clock";
   }
+
+  get description() {
+    return "This clock is a masterpiece of uselessness. Each circle represents a different unit of time, from milliseconds to hours. The radius of each circle is proportional to the current time. The thing that I like the most is the fact that is nearly impossible to tell how big a circle is without checking a real clock.";
+  }
 }
 
 class BinaryClock extends Clock {
@@ -335,13 +361,16 @@ class BinaryClock extends Clock {
   get title() {
     return "Binary Clock";
   }
+
+  get description() {
+    return "I have seen plenty of clocks similar to this, from watches to wall clocks. I have always found them fascinating, mostly because they are outrageously unreadable. This clock tells the time in binary; however, it is not the actual time that is represented, but the number of milliseconds since the Unix Epoch (January 1st, 1970). Even if you know how to read binary, it is still impossible to tell the time without doing quite a lot of calculations.";
+  }
 }
 
 class ShuffledClock extends Clock {
   drawClock(ctx) {
     const time_str = this.date.toISOString().replace(/[TZ]/g, "");
-    this._rng = new XOR128(this.date.getTime());
-    const scrambled = this._rng.shuffle_string(time_str);
+    const scrambled = this.rng.shuffle_string(time_str);
     const size = 160;
 
     ctx.save();
@@ -372,6 +401,10 @@ class ShuffledClock extends Clock {
 
   get title() {
     return "Shuffled Clock";
+  }
+
+  get description() {
+    return "This is not only completely useless, but also unreadable. The current time is used to seed a random number generator, which is then used to shuffle the string representation of the current time. The result is a unique string that changes each millisecond: however, to actually know the time, it would be necessary to get the date, study the implemented shuffling algorithm, and then apply it backwards to the string. Isn't that great?";
   }
 }
 
@@ -408,14 +441,20 @@ class GearClock extends Clock {
   get title() {
     return "Gear Clock";
   }
+
+  get description() {
+    return "In this clock, each gear represents a different unit of time, from milliseconds to hours: the position of the black line represents the corresponding value of the current time. The gears rotate over time, replicating the movement of a real clock. Between all the clocks in this collection, this is probably one of the few that makes sense. On a side note, I would love to build a real clock out of this (without the milliseconds) and have it on my wall. Wouldn't that look nice?";
+  }
 }
 
 class LinesClock extends Clock {
   preload() {
-    this._rng = new XOR128();
-    this._directions = Array(4)
+    this._directions = new Array(4)
       .fill()
-      .map(() => this._rng.random_int(-1, 1));
+      .map(() => this.rng.random_int(-1, 1));
+    this._offsets = new Array(4)
+      .fill()
+      .map(() => this.rng.random(0, Math.PI * 2));
   }
 
   drawClock(ctx) {
@@ -427,7 +466,8 @@ class LinesClock extends Clock {
     ctx.strokeStyle = this.white;
     ctx.lineWidth = 4;
     for (let i = 0; i < 4; i++) {
-      const theta = time_array[i] * Math.PI * 2 * this._directions[i];
+      const theta =
+        time_array[i] * Math.PI * 2 * this._directions[i] + this._offsets[i];
       const r = this.width / 2;
 
       ctx.save();
@@ -443,6 +483,10 @@ class LinesClock extends Clock {
 
   get title() {
     return "Lines Clock";
+  }
+
+  get description() {
+    return "At first glance, it almost looks like you could tell the time on this clock: there are 4 lines, each representing a different unit of time, rotating around a central point. However, the lines rotate in random directions and have a random offset, making it impossible to tell the time; furthermore, since each hand is as wide as the whole clock, there's just no way of telling the current value it is pointing. This clock is a perfect example of how to make something that looks like it could be useful, but it is not.";
   }
 }
 
@@ -476,9 +520,18 @@ class SquaresClock extends Clock {
   get title() {
     return "Squares Clock";
   }
+
+  get description() {
+    return "This is one of the clocks that despite looking (hopefully) quite clean and tidy, are actually absolutely unreadable. The unit of time in each square is represented by the level of transparency of the square itself, from milliseconds (top left) to hours (bottom right). Once again, this shows that tidiness and order don't necessarily mean readability.";
+  }
 }
 
 class SmallSquaresClock extends Clock {
+  preload() {
+    this._offsets = new Array(4)
+      .fill(0)
+      .map(() => this.rng.random(0, Math.PI * 2));
+  }
   drawClock(ctx) {
     const time_array = this.normalizeDate(this.date);
     const cols = 10;
@@ -498,7 +551,7 @@ class SmallSquaresClock extends Clock {
         ctx.save();
         ctx.translate(x + inner_size / 2, inner_size / 2);
         ctx.scale(this.scl, this.scl);
-        ctx.rotate(a);
+        ctx.rotate(a + this._offsets[i]);
 
         ctx.fillStyle = this.white;
         ctx.lineWidth = 4;
@@ -514,20 +567,23 @@ class SmallSquaresClock extends Clock {
   get title() {
     return "Small Squares Clock";
   }
+
+  get description() {
+    return "This clock shows the time by rotating squares. From the top (milliseconds) to the bottom (hours), the rotation of each clock represents the relative time unit. But how do I measure the rotation? Why do the squares don't move linearly? I don't know, but it looks cool.";
+  }
 }
 
 class SmallLinesClock extends Clock {
   preload() {
-    this._rng = new XOR128();
     this._cols = 10;
-    this._roles = Array(this._cols * this._cols)
+    this._roles = new Array(this._cols * this._cols)
       .fill()
-      .map((_, i) => ({ role: i % 4, order: this._rng.random() }))
+      .map((_, i) => ({ role: i % 4, order: this.rng.random() }))
       .sort((a, b) => a.order - b.order)
       .map((r) => r.role);
-    this._direction = Array(this._cols * this._cols)
+    this._direction = new Array(this._cols * this._cols)
       .fill()
-      .map(() => this._rng.random_int(-1, 1));
+      .map(() => this.rng.random_int(-1, 1));
   }
 
   drawClock(ctx) {
@@ -558,26 +614,27 @@ class SmallLinesClock extends Clock {
   get title() {
     return "Small Lines Clock";
   }
+
+  get description() {
+    return "This clock is similar to the Lines Clock, but each line is smaller and there are more of them. The lines are also randomly rotated, making it even more impossible to tell the time. This makes the composition pretty static and without many moving objects, but don't let it fool you: what time is it?";
+  }
 }
 
 class OnlyOneRightClock extends Clock {
   preload() {
     this._cols = 7;
-    this._rng = new XOR128();
 
-    const right_x = this._rng.random_int(this._cols);
-    const right_y = this._rng.random_int(this._cols);
+    const right_x = this.rng.random_int(this._cols);
+    const right_y = this.rng.random_int(this._cols);
 
-    this._offsets = Array(this._cols * this._cols)
-      .fill()
-      .map((_, i) => {
-        const x = i % this._cols;
-        const y = Math.floor(i / this._cols);
-        if (x === right_x && y === right_y) return Array(4).fill(0);
-        return Array(4)
-          .fill()
-          .map(() => this._rng.random(-1, 1));
-      });
+    this._offsets = new Array(this._cols * this._cols).fill().map((_, i) => {
+      const x = i % this._cols;
+      const y = Math.floor(i / this._cols);
+      if (x === right_x && y === right_y) return Array(4).fill(0);
+      return Array(4)
+        .fill()
+        .map(() => this.rng.random(-1, 1));
+    });
   }
 
   drawClock(ctx) {
@@ -619,6 +676,10 @@ class OnlyOneRightClock extends Clock {
 
   get title() {
     return "Only One is Right";
+  }
+
+  get description() {
+    return "This clock is an unicum in the whole collection, because it actually shows the correct time! But only one of the clock faces is actually correct, while all the other show are not. Which is which? I don't know.";
   }
 }
 
@@ -662,21 +723,22 @@ class PolygonClock extends Clock {
   get title() {
     return "Polygon Clock";
   }
+
+  get description() {
+    return "The time in this clock is represented by the number of sides of each polygon. The polygons are drawn from milliseconds (top left) to hours (bottom right). It's really really hard to tell the time on this clock, because shapes with more than 15-20 sides are basically indistinguishable from one another. Or from a circle, for that matter.";
+  }
 }
 
 class SmallCirclesClock extends Clock {
   preload() {
     this._max_amount = [100, 60, 60, 24];
-    this._rng = new XOR128();
-    this._order = Array(4)
-      .fill()
-      .map((_, i) =>
-        this._rng.shuffle_array(
-          Array(this._max_amount[i])
-            .fill()
-            .map((_, j) => j)
-        )
-      );
+    this._order = new Array(4).fill().map((_, i) =>
+      this.rng.shuffle_array(
+        Array(this._max_amount[i])
+          .fill()
+          .map((_, j) => j)
+      )
+    );
   }
 
   drawClock(ctx) {
@@ -723,6 +785,10 @@ class SmallCirclesClock extends Clock {
 
   get title() {
     return "Small Circles Clock";
+  }
+
+  get description() {
+    return "The time is this clock is shown by filling up a grid of small circles: each circle represents a unit of time. I like this clock because, unlike others, it is not that chaotic (thanks to the grid-shaped layout), but it is still impossible to tell the time at first (or second, or third, or ever) glance.";
   }
 }
 
@@ -772,6 +838,10 @@ class LinesBinaryClock extends Clock {
   get title() {
     return "Lines Binary Clock";
   }
+
+  get description() {
+    return "This clock is similar to the Binary Clock already shown in the collection, but instead of using squares, it uses lines. The seconds since the Unix Epoch are converted to binary, and each line represents a bit. The lines are drawn from top to bottom, so the first line represents the most significant bit, and the last line represents the least significant bit. This clock is also unreadable, even more than the other one.";
+  }
 }
 
 class MultipleCirclesClock extends Clock {
@@ -796,6 +866,10 @@ class MultipleCirclesClock extends Clock {
 
   get title() {
     return "Multiple Circles Clock";
+  }
+
+  get description() {
+    return "This clock is really anti intuitive and particularly hard to read: each circle represents a unit of time, from milliseconds to hours, where the radius represents the amount. The catch is that it's actually impossible to tell which circle represents which value and to measure the radius, a pixel-correct ruler would be needed.";
   }
 }
 
@@ -831,6 +905,10 @@ class XOR128Clock extends Clock {
 
   get title() {
     return "XOR128 Clock";
+  }
+
+  get description() {
+    return "This clock is based on the XOR128 random number generator. Every millisecond it gets seeded with the current time; each of the line is then rotated in a random direction by 45 degrees. It's actually impossible to read the time on this one, but since the algorithm is fully repeatable, there could be a way of finding out the time by starting from a screenshot. Completely useless, I know.";
   }
 }
 
