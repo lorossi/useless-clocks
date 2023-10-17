@@ -6,7 +6,7 @@ import {
   GearClock,
   LinesBinaryClock,
   LinesClock,
-  ModulatesSineClock,
+  ModulatedSineClock,
   MultipleCirclesClock,
   OnlyOneRightClock,
   PolygonClock,
@@ -28,7 +28,7 @@ const CLOCKS_MAP = {
   gear: GearClock,
   lines_binary: LinesBinaryClock,
   lines: LinesClock,
-  modulates_sines: ModulatesSineClock,
+  modulated_sines_sines: ModulatedSineClock,
   multiple_circles: MultipleCirclesClock,
   only_one_right: OnlyOneRightClock,
   polygon: PolygonClock,
@@ -45,6 +45,16 @@ const CLOCKS_MAP = {
 class ClockFactory {
   constructor() {
     this._index = 0;
+  }
+
+  getDescriptions() {
+    return ClockFactory.types.map((type) => {
+      const clock = ClockFactory.create(type);
+      return {
+        name: clock.title,
+        description: clock.description,
+      };
+    });
   }
 
   createNext(width = 1000, height = 1000) {
