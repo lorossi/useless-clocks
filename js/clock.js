@@ -1,4 +1,5 @@
 import { XOR128 } from "./xor128.js";
+import { Color } from "./engine.js";
 
 class Clock {
   constructor(width = 1000, height = 1000) {
@@ -11,8 +12,8 @@ class Clock {
     this.date = null;
     this.old_date = null;
     this.scl = 0.9;
-    this.white = this._loadCSSVar("white");
-    this.black = this._loadCSSVar("black");
+    this.white = Color.fromMonochrome(245).rgba;
+    this.black = Color.fromMonochrome(15).rgba;
 
     const seed = new Date().getTime();
     this.rng = new XOR128(seed);

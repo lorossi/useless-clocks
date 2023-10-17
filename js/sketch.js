@@ -6,15 +6,17 @@ import { Description } from "./description.js";
 class Sketch extends Engine {
   preload() {
     this._scl = 0.85;
+    this._background_color = Color.fromMonochrome(15);
     // callback for description
-    document.querySelector("#description").addEventListener("click", () => {
-      this._showDescription();
-    });
+    document
+      .querySelector("#description")
+      .addEventListener("click", () => this._showDescription());
     this._description = new Description();
   }
 
   setup() {
     this._clockFactory = new ClockFactory();
+    console.log(this._clockFactory.getDescriptions());
     this._clock = this._clockFactory.createNext();
   }
 
@@ -23,7 +25,7 @@ class Sketch extends Engine {
     this._clock.update(date);
 
     // draw background
-    this.background("rgb(15, 15, 15)");
+    this.background(this._background_color.rgb);
     this.ctx.save();
 
     // translate and scale to accomodate for description
