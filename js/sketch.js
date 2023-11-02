@@ -15,9 +15,11 @@ class Sketch extends Engine {
   }
 
   setup() {
-    this._clockFactory = new ClockFactory();
-    console.log(this._clockFactory.getDescriptions());
+    const seed = new Date().getTime();
+    this._xor128 = new XOR128(seed);
+    this._clockFactory = new ClockFactory(this._xor128);
     this._clock = this._clockFactory.createNext();
+    console.log(ClockFactory.types);
   }
 
   draw() {
@@ -59,6 +61,7 @@ class Sketch extends Engine {
   }
 
   _showDescription() {
+    this._description.setTitle(this._clock.title);
     this._description.setDescription(this._clock.description);
     this._description.show();
   }
