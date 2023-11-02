@@ -24,6 +24,10 @@ To see a description of each clock (reported here as well), click (or tap) the b
 
 ### Descriptions
 
+#### Angle Clock
+
+Another day, another useless clock. The time is represented by angles, but their size is inversely proportional to the current time: the bigger the angle, the smaller the time. The angles are drawn from milliseconds to hours in an anti-clockwise fashion, and the whole thing rotates clockwise. This clock is also unreadable, but in a very fancy way.
+
 #### Bar Clock
 
 This is probably one of the most readable clocks (this statement really tells a story). Each bar fills up proportionally to the current time, from milliseconds (left) to hours (right). The bars get move almost slowly over time, giving almost the idea of being able to read what it is actually shown. Yeah, almost.
@@ -38,7 +42,7 @@ This clock is a masterpiece of uselessness: each circle represents a different u
 
 #### Frequency Sine Clock
 
-This clock is similar to the others using sines to tell the time: in this specimen, the actual time is represented by the frequency of each sine wave. It is very similar to the other sinusoidal clocks, but it is also very different. It is one of my favourites. Also, I would rate it 10/10 for the impossibility of decrypting it.
+This clock is similar to the other one using sines to tell the time, but the actual time is represented by the frequency of each sine wave and not by its length. It is very similar to the other sinusoidal clocks, but it is also very different. It is one of my favourites.
 
 #### Gear Clock
 
@@ -88,6 +92,10 @@ This clock is similar to the Lines Clock, but each line is smaller and there are
 
 This clock shows the time by rotating squares. From the top (milliseconds) to the bottom (hours), the rotation of each clock represents the relative time unit. But how do I measure the rotation? But wait, why don't the squares rotate at a constant speed? How do I even try to read the time? I don't know, but it looks cool.
 
+#### Star Clock
+
+This clock is based on the idea of a star: each star has a different number of points, from milliseconds (top left) to hours (bottom right). Furthermore, the ratio between inner and outer radius, the rotation of each star, and the number of points are randomized at each time. This clock is extremely unreadable, but it's also very pretty. I like it and I would probably print it to hang on a wall.
+
 #### Squares Clock
 
 This is one of the clocks that despite looking (hopefully) quite clean and tidy, are actually absolutely unreadable. The unit of time in each square is represented by the level of transparency of the square itself, from milliseconds (top left) to hours (bottom right). Once again, this shows that tidiness and order don't necessarily mean readability.
@@ -98,7 +106,7 @@ This clock is similar to the Bar Clock, but instead of using bars, it uses trian
 
 #### XOR128 Clock
 
-This clock is based on the XOR128 random number generator. Every millisecond it gets seeded with the current time; each of the line is then rotated in a random direction by 45 degrees. It's actually impossible to read the time on this one, but since the algorithm is fully repeatable, there could be a way of finding out the time by starting from a screenshot. Completely useless, I know. And I am so proud of it.
+This clock is based on the XOR128 random number generator. Every few milliseconds it gets seeded with the current time; each of the line is then rotated in a random direction by 45 degrees. It's actually impossible to read the time on this one, but since the algorithm is fully repeatable, there could be a way of finding out the time by starting from a screenshot. Completely useless, I know. And I am so proud of it.
 
 ## Credits
 
