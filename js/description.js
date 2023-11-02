@@ -9,6 +9,7 @@ class Description {
     // create the div element and append it to the body
     this._div = this._createDiv();
     this._description_p = this._div.querySelector("#content");
+    this._title_p = this._div.querySelector("#title");
     this._exit_button = this._div.querySelector("#close-button");
     this._exit_button.addEventListener("click", (_) => {
       this.hide();
@@ -18,8 +19,9 @@ class Description {
       this._positionDiv(this._div);
     });
     document.querySelector("body").appendChild(this._div);
-    // initialize the description
+    // initialize description and title
     this._description = "";
+    this._title = "";
 
     // select the container of the description
     this._container = document.querySelector(".container");
@@ -57,12 +59,19 @@ class Description {
     div.id = "description-container";
     div.classList.add("hidden");
 
-    const p = document.createElement("p");
-    p.style.color = this._white;
-    p.style.textAlign = "center";
-    p.textContent = this._description;
-    p.id = "content";
-    div.appendChild(p);
+    const title = document.createElement("h1");
+    title.style.color = this._white;
+    title.style.textAlign = "center";
+    title.textContent = this._title;
+    title.id = "title";
+    div.appendChild(title);
+
+    const description = document.createElement("p");
+    description.style.color = this._white;
+    description.style.textAlign = "center";
+    description.textContent = this._description;
+    description.id = "content";
+    div.appendChild(description);
 
     const button = document.createElement("span");
     button.id = "close-button";
@@ -82,6 +91,11 @@ class Description {
 
     div.style.left = `${(page_w - div_w) / 2}px`;
     div.style.top = `${(page_h - div_h) / 2}px`;
+  }
+
+  setTitle(title) {
+    this._title = title;
+    this._title_p.textContent = this._title;
   }
 
   setDescription(description) {
