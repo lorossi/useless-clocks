@@ -12,8 +12,8 @@ class Clock {
     this.date = null;
     this.old_date = null;
     this.scl = 0.9;
-    this.white = Color.fromMonochrome(245).rgba;
-    this.black = Color.fromMonochrome(15).rgba;
+    this.white = Color.fromMonochrome(245);
+    this.black = Color.fromMonochrome(15);
 
     const seed = new Date().getTime();
     this.rng = new XOR128(seed);
@@ -52,6 +52,11 @@ class Clock {
     ctx.restore();
   }
 
+  /**
+   * Extract the time from a Date object and return it as a dictionary, containing the milliseconds, seconds, minutes, and hours.
+   * @param {Date} date
+   * @returns {Object} The time as a dictionary.
+   */
   unpackDate(date) {
     const hours = date.getHours();
     const minutes = date.getMinutes();
@@ -69,6 +74,11 @@ class Clock {
     };
   }
 
+  /**
+   * Normalize the time from a Date object and return it as an array, containing the milliseconds, seconds, minutes, and hours in range [0, 1].
+   * @param {Date} date
+   * @returns {Array} The normalized time.
+   */
   normalizeDate(date) {
     const time = this.unpackDate(date);
     return [
@@ -79,9 +89,25 @@ class Clock {
     ];
   }
 
+  /**
+   * Ease in and out a value using a polynomial function.
+   * @param {Number} x
+   * @param {Number} n
+   * @returns {Number} The eased value.
+   */
   easeInOutPoly(x, n = 5) {
     if (x < 0.5) return Math.pow(2 * x, n) / 2;
     return 1 - Math.pow(2 * (1 - x), n) / 2;
+  }
+
+  /**
+   * Ease in a value using a polynomial function.
+   * @param {Number} x
+   * @param {Number} n
+   * @returns {Number} The eased value.
+   */
+  easeInPoly(x, n = 5) {
+    return Math.pow(x, n);
   }
 
   get title() {
@@ -117,10 +143,10 @@ class SineClock extends Clock {
 
     const ctx = canvas.getContext("2d");
     ctx.save();
-    ctx.fillStyle = this.black;
+    ctx.fillStyle = this.black.rgba;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.strokeStyle = this.white;
+    ctx.strokeStyle = this.white.rgba;
     ctx.lineWidth = 2;
     ctx.translate(0, canvas.height / 2);
     this.drawSine(ctx, canvas.width, frequency, amplitude);
@@ -236,6 +262,10 @@ class TriangleClock extends Clock {
   drawClock(ctx) {
     const time_array = this.normalizeDate(this.date);
 
+    ctx.translate(this.width / 2, this.height / 2);
+    ctx.scale(this.scl, this.scl);
+    ctx.translate(-this.width / 2, -this.height / 2);
+
     for (let i = 0; i < 4; i++) {
       const w = Math.floor(this.width / 4);
       const h = Math.floor(this.height * time_array[i]);
@@ -247,8 +277,9 @@ class TriangleClock extends Clock {
       ctx.moveTo(0, h / 2);
       ctx.lineTo(w - ctx.lineWidth, 0);
       ctx.lineTo(0, -h / 2);
-      ctx.fillStyle = this.white;
-      ctx.strokeStyle = this.white;
+      ctx.fillStyle = this.white.rgba;
+      ctx.strokeStyle = this.white.rgba;
+      ctx.closePath();
       ctx.fill();
       ctx.stroke();
       ctx.restore();
@@ -281,9 +312,9 @@ class BarClock extends Clock {
       ctx.translate(-w / 2, -this.height / 2);
 
       ctx.lineWidth = 4;
-      ctx.strokeStyle = this.white;
+      ctx.strokeStyle = this.white.rgba;
       ctx.strokeRect(0, 0, w, this.height);
-      ctx.fillStyle = this.white;
+      ctx.fillStyle = this.white.rgba;
       ctx.fillRect(0, this.height - h, w, h);
       ctx.restore();
     }
@@ -316,8 +347,8 @@ class CircleClock extends Clock {
 
       ctx.scale(this.scl, this.scl);
 
-      ctx.fillStyle = this.white;
-      ctx.strokeStyle = this.white;
+      ctx.fillStyle = this.white.rgba;
+      ctx.strokeStyle = this.white.rgba;
       ctx.beginPath();
       ctx.arc(0, 0, r, 0, Math.PI * 2);
       ctx.fill();
@@ -347,8 +378,8 @@ class BinaryClock extends Clock {
 
       ctx.save();
       ctx.translate((x * this.width) / 8, (y * this.height) / 8);
-      ctx.fillStyle = b ? this.white : this.black;
-      ctx.strokeStyle = this.white;
+      ctx.fillStyle = b ? this.white.rgba : this.black.rgba;
+      ctx.strokeStyle = this.white.rgba;
       ctx.lineWidth = 4;
       ctx.fillRect(0, 0, this.width / 8, this.height / 8);
       ctx.strokeRect(0, 0, this.width / 8, this.height / 8);
@@ -378,7 +409,7 @@ class ShuffledClock extends Clock {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = `${size}px HackBold`;
-    ctx.fillStyle = this.white;
+    ctx.fillStyle = this.white.rgba;
     ctx.translate(this.width / 2, this.height / 2);
     ctx.scale(this.scl, this.scl);
 
@@ -422,8 +453,8 @@ class GearClock extends Clock {
       ctx.rotate(theta);
       ctx.scale(this.scl, this.scl);
 
-      ctx.fillStyle = this.white;
-      ctx.strokeStyle = this.black;
+      ctx.fillStyle = this.white.rgba;
+      ctx.strokeStyle = this.black.rgba;
       ctx.lineWidth = 4;
 
       ctx.beginPath();
@@ -449,9 +480,7 @@ class GearClock extends Clock {
 
 class LinesClock extends Clock {
   preload() {
-    this._directions = new Array(4)
-      .fill()
-      .map(() => this.rng.random_int(-1, 1));
+    this._directions = new Array(4).fill().map(() => this.rng.pick([-1, 1]));
     this._offsets = new Array(4)
       .fill()
       .map(() => this.rng.random(0, Math.PI * 2));
@@ -459,24 +488,29 @@ class LinesClock extends Clock {
 
   drawClock(ctx) {
     const time_array = this.normalizeDate(this.date);
+    const r = this.width / 2;
 
     ctx.save();
     ctx.translate(this.width / 2, this.height / 2);
     ctx.scale(this.scl, this.scl);
-    ctx.strokeStyle = this.white;
+    ctx.strokeStyle = this.white.rgba;
     ctx.lineWidth = 4;
-    for (let i = 0; i < 4; i++) {
-      const theta =
-        time_array[i] * Math.PI * 2 * this._directions[i] + this._offsets[i];
-      const r = this.width / 2;
 
-      ctx.save();
-      ctx.rotate(theta);
-      ctx.beginPath();
-      ctx.moveTo(-r, 0);
-      ctx.lineTo(r, 0);
-      ctx.stroke();
-      ctx.restore();
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 2; j++) {
+        const scl = j == 0 ? 1 : -1;
+        const theta =
+          time_array[i] * Math.PI * 2 * this._directions[i] * scl +
+          this._offsets[i];
+
+        ctx.save();
+        ctx.rotate(theta);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(r, 0);
+        ctx.stroke();
+        ctx.restore();
+      }
     }
     ctx.restore();
   }
@@ -505,8 +539,8 @@ class SquaresClock extends Clock {
       ctx.translate(x + w / 2, y + h / 2);
       ctx.scale(this.scl, this.scl);
 
-      ctx.fillStyle = this.white;
-      ctx.strokeStyle = this.white;
+      ctx.fillStyle = this.white.rgba;
+      ctx.strokeStyle = this.white.rgba;
       ctx.lineWidth = 4;
 
       ctx.strokeRect(-w / 2, -h / 2, w, h);
@@ -553,7 +587,7 @@ class SmallSquaresClock extends Clock {
         ctx.scale(this.scl, this.scl);
         ctx.rotate(a + this._offsets[i]);
 
-        ctx.fillStyle = this.white;
+        ctx.fillStyle = this.white.rgba;
         ctx.lineWidth = 4;
 
         ctx.fillRect(-inner_size / 2, -inner_size / 2, inner_size, inner_size);
@@ -575,7 +609,7 @@ class SmallSquaresClock extends Clock {
 
 class SmallLinesClock extends Clock {
   preload() {
-    this._cols = 10;
+    this._cols = 20;
     this._roles = new Array(this._cols * this._cols)
       .fill()
       .map((_, i) => ({ role: i % 4, order: this.rng.random() }))
@@ -583,7 +617,7 @@ class SmallLinesClock extends Clock {
       .map((r) => r.role);
     this._direction = new Array(this._cols * this._cols)
       .fill()
-      .map(() => this.rng.random_int(-1, 1));
+      .map(() => this.rng.pick([-1, 1]));
   }
 
   drawClock(ctx) {
@@ -600,7 +634,7 @@ class SmallLinesClock extends Clock {
         ctx.translate(x * size + size / 2, y * size + size / 2);
         ctx.scale(this.scl, this.scl);
         ctx.rotate(a);
-        ctx.strokeStyle = this.white;
+        ctx.strokeStyle = this.white.rgba;
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.moveTo(-size / 2, 0);
@@ -633,7 +667,7 @@ class OnlyOneRightClock extends Clock {
       if (x === right_x && y === right_y) return Array(4).fill(0);
       return Array(4)
         .fill()
-        .map(() => this.rng.random(-1, 1));
+        .map(() => this.rng.pick([-1, 1]));
     });
   }
 
@@ -648,7 +682,7 @@ class OnlyOneRightClock extends Clock {
         ctx.save();
         ctx.translate(x * size + size / 2, y * size + size / 2);
         ctx.scale(this.scl, this.scl);
-        ctx.strokeStyle = this.white;
+        ctx.strokeStyle = this.white.rgba;
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
@@ -659,7 +693,7 @@ class OnlyOneRightClock extends Clock {
           const angle = (time_array[j] + this._offsets[i][j]) * Math.PI * 2;
 
           ctx.save();
-          ctx.strokeStyle = this.white;
+          ctx.strokeStyle = this.white.rgba;
           ctx.lineWidth = 2;
           ctx.rotate(angle);
           ctx.beginPath();
@@ -703,8 +737,8 @@ class PolygonClock extends Clock {
       ctx.translate((x + 0.5) * size, (y + 0.5) * size);
       ctx.scale(this.scl, this.scl);
 
-      ctx.fillStyle = this.white;
-      ctx.strokeStyle = this.white;
+      ctx.fillStyle = this.white.rgba;
+      ctx.strokeStyle = this.white.rgba;
       ctx.lineWidth = 4;
 
       ctx.beginPath();
@@ -760,11 +794,11 @@ class SmallCirclesClock extends Clock {
       ctx.scale(this.scl, this.scl);
       ctx.translate(-size / 2, -size / 2);
 
-      ctx.strokeStyle = this.white;
+      ctx.strokeStyle = this.white.rgba;
       ctx.lineWidth = 2;
       ctx.strokeRect(0, 0, size, size);
 
-      ctx.fillStyle = this.white;
+      ctx.fillStyle = this.white.rgba;
       for (let j = 0; j < balls[i]; j++) {
         const ball_size = size / 10;
         const ball_x = this._order[i][j] % 10;
@@ -821,8 +855,8 @@ class LinesBinaryClock extends Clock {
       str.split("").forEach((c, j) => {
         if (c === "1") {
           ctx.save();
-          ctx.fillStyle = this.white;
-          ctx.strokeStyle = this.white;
+          ctx.fillStyle = this.white.rgba;
+          ctx.strokeStyle = this.white.rgba;
           ctx.lineWidth = 2;
           ctx.translate((j + 0.5) * w, 0);
           ctx.fillRect(-inner_w / 2, 0, inner_w, h);
@@ -851,7 +885,7 @@ class MultipleCirclesClock extends Clock {
     ctx.save();
     ctx.translate(this.width / 2, this.height / 2);
     ctx.scale(this.scl, this.scl);
-    ctx.strokeStyle = this.white;
+    ctx.strokeStyle = this.white.rgba;
     ctx.lineWidth = 4;
 
     time_array.forEach((t) => {
@@ -878,19 +912,25 @@ class XOR128Clock extends Clock {
     this._cols = 20;
     this._rows = 20;
     this._scl = Math.min(this.width / this._cols, this.height / this._rows);
+    // cap the fps to 24
+    this._interval = 1000 / 24;
+    this._last_update = 0;
+    this._angles = new Array(this._cols * this._rows)
+      .fill()
+      .map(() => this.rng.pick([-Math.PI / 4, Math.PI / 4]));
   }
 
   drawClock(ctx) {
-    const rng = new XOR128(this.date.getTime());
-
     for (let x = 0; x < this._cols; x++) {
       for (let y = 0; y < this._rows; y++) {
-        const a = rng.random_bool() ? Math.PI / 4 : -Math.PI / 4;
+        const i = x + y * this._cols;
+        const a = this._angles[i];
+
         ctx.save();
         ctx.translate((x + 0.5) * this._scl, (y + 0.5) * this._scl);
-        ctx.scale(this.scl, this.scl);
+
         ctx.rotate(a);
-        ctx.strokeStyle = this.white;
+        ctx.strokeStyle = this.white.rgba;
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(-this._scl / 2, 0);
@@ -900,7 +940,12 @@ class XOR128Clock extends Clock {
       }
     }
 
-    this._last_update = this.date.getTime();
+    if (this._last_update + this._interval < this.date.getTime()) {
+      this._last_update = this.date.getTime();
+      this._angles = this._angles.map((_) =>
+        this.rng.pick([-Math.PI / 4, Math.PI / 4])
+      );
+    }
   }
 
   get title() {
@@ -908,11 +953,134 @@ class XOR128Clock extends Clock {
   }
 
   get description() {
-    return "This clock is based on the XOR128 random number generator. Every millisecond it gets seeded with the current time; each of the line is then rotated in a random direction by 45 degrees. It's actually impossible to read the time on this one, but since the algorithm is fully repeatable, there could be a way of finding out the time by starting from a screenshot. Completely useless, I know. And I am so proud of it.";
+    return "This clock is based on the XOR128 random number generator. Every few milliseconds it gets seeded with the current time; each of the line is then rotated in a random direction by 45 degrees. It's actually impossible to read the time on this one, but since the algorithm is fully repeatable, there could be a way of finding out the time by starting from a screenshot. Completely useless, I know. And I am so proud of it.";
+  }
+}
+
+class AngleClock extends Clock {
+  drawClock(ctx) {
+    const time_array = this.normalizeDate(this.date);
+
+    ctx.save();
+    ctx.translate(this.width / 2, this.height / 2);
+    ctx.scale(this.scl, this.scl);
+    ctx.rotate(Math.PI / 4);
+
+    ctx.strokeStyle = this.white.rgba;
+    ctx.lineWidth = 2;
+
+    for (let i = 0; i < 4; i++) {
+      const t1 = (time_array[i] * Math.PI) / 4;
+      const t2 = Math.PI / 2 - t1;
+
+      const r = this.width / 2;
+      const x1 = Math.cos(t1) * r;
+      const y1 = Math.sin(t1) * r;
+      const x2 = Math.cos(t2) * r;
+      const y2 = Math.sin(t2) * r;
+
+      ctx.save();
+      ctx.fillStyle = this.white.rgba;
+
+      ctx.rotate((i * Math.PI) / 2);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(0, 0);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      const rr = r * this.easeInOutPoly(time_array[i], 2);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, rr, t1, t2);
+
+      ctx.fill();
+      ctx.restore();
+    }
+
+    ctx.restore();
+  }
+
+  get title() {
+    return "Angle Clock";
+  }
+
+  get description() {
+    return "Another day, another useless clock. The time is represented by angles, but their size is inversely proportional to the current time: the bigger the angle, the smaller the time. The angles are drawn from milliseconds to hours in an anti-clockwise fashion, and the whole thing rotates clockwise. This clock is also unreadable, but in a very fancy way.";
+  }
+}
+
+class StarClock extends Clock {
+  preload() {
+    this._rotations = new Array(4)
+      .fill()
+      .map(() => this.rng.random(0, Math.PI * 2));
+    this._d_theta_factor = new Array(4)
+      .fill()
+      .map(() => this.rng.random(0.1, 0.5));
+    this._inner_r_factor = new Array(4)
+      .fill()
+      .map(() => this.rng.random(0.3, 0.5));
+    this._max_points = this.rng.random_int(50, 100);
+  }
+
+  drawClock(ctx) {
+    const time_array = this.normalizeDate(this.date);
+
+    ctx.save();
+    ctx.translate(this.width / 2, this.height / 2);
+    ctx.scale(this.scl, this.scl);
+    ctx.translate(-this.width / 2, -this.height / 2);
+
+    ctx.strokeStyle = this.white.rgba;
+    ctx.lineWidth = 2;
+
+    for (let i = 0; i < 4; i++) {
+      const points = Math.floor(time_array[i] * this._max_points) + 3;
+      const x = (i % 2) * (this.width / 2) + this.width / 4;
+      const y = Math.floor(i / 2) * (this.height / 2) + this.height / 4;
+      const r = (this.width / 4) * this.scl;
+      const inner_r = r * this._inner_r_factor[i];
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(this._rotations[i]);
+      ctx.beginPath();
+
+      const d_theta = (Math.PI * 2) / (points + 1);
+      for (let j = 0; j < points; j++) {
+        const theta1 = j * d_theta;
+        const theta2 = theta1 * this._d_theta_factor[i];
+
+        const x1 = Math.cos(theta1 - theta2 / 2) * inner_r;
+        const y1 = Math.sin(theta1 - theta2 / 2) * inner_r;
+        const x2 = Math.cos(theta1) * r;
+        const y2 = Math.sin(theta1) * r;
+        const x3 = Math.cos(theta1 + theta2 / 2) * inner_r;
+        const y3 = Math.sin(theta1 + theta2 / 2) * inner_r;
+
+        if (i == 0 && j == 0) ctx.moveTo(x1, y1);
+        else ctx.lineTo(x1, y1);
+
+        ctx.lineTo(x2, y2);
+        ctx.lineTo(x3, y3);
+      }
+      ctx.closePath();
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  get title() {
+    return "Star Clock";
+  }
+
+  get description() {
+    return "This clock is based on the idea of a star: each star has a different number of points, from milliseconds (top left) to hours (bottom right). Furthermore, the ratio between inner and outer radius, the rotation of each star, and the number of points are randomized at each time. This clock is extremely unreadable, but it's also very pretty. I like it and I would probably print it to hang on a wall.";
   }
 }
 
 export {
+  AngleClock,
   BarClock,
   BinaryClock,
   CircleClock,
@@ -929,6 +1097,7 @@ export {
   SmallCirclesClock,
   SmallLinesClock,
   SmallSquaresClock,
+  StarClock,
   SquaresClock,
   TriangleClock,
   XOR128Clock,
