@@ -94,6 +94,10 @@ a:active {
   z-index: 1000;
 }
 
+#description-container #title {
+  padding-bottom: var(--text-size);
+}
+
 #description-container #close-button {
   user-select: none;
   cursor: pointer;
