@@ -4,7 +4,7 @@
 
 [Try it out!](https://lorenzoros.si/useless-clocks/)
 
-[Instagram Post](https://www.instagram.com/lorossi97)
+[Instagram Post](https://www.instagram.com/p/C7hfVymgzIM/)
 
 ## Some Examples
 
