@@ -2,9 +2,9 @@
 
 *A collection of useless clocks. Weird.*
 
-[Try it out!]()
+[Try it out!](https://lorenzoros.si/useless-clocks/)
 
-[Instagram Post]()
+[Instagram Post](https://www.instagram.com/lorossi97)
 
 ## Some Examples
 
@@ -19,17 +19,23 @@
 
 ## Wait what?
 
-I always try hard to describe the idea and the reasoning behind each and every of my project, embellishing the *(often boring)* process of coding with a bit of *(always real and never invented)* storytelling.
+I often try hard to describe the idea and the reasoning behind each and every one of my projects, embellishing the *(often boring)* process of coding with a bit of *(always real and never invented)* storytelling.
 
-The idea for this absolutely dumb and utterly useless project came to me while I was sleeping.
-All my half-asleep brain could see in my spinning room was a bunch of changing clocks, each one with a different time format, equally useless and equally fascinating.
-As soon as I woke up, I completely forgot about it and went on with my day to day life.
+The idea for this absolutely **dumb and utterly useless project** came to me while I was sleeping. You know, those revealing dreams that people in the past used to have?
+All my hallucinating brain could see in my *(spinning, according to my brain itself)* room was a bunch of changing clocks, each one with a different time format, equally useless and equally fascinating.
 
-A few weeks pass by, and in a moment of pure and complete procrastination, I decided to start this project.
-Some designs *(such as the ones including sine waves and the triangles one)* have been inspired by an exhibition from about 15 years ago at Hangar Bicocca in Milan, Italy. Sadly, I cannot for the life of me remember the name of the artist or the exhibition, but I clearly remember going there multiple times just to have a look at projection on a big screen of a series of time-telling animations.
-In my *"early programmer days"*, I recall trying to replicate the sine wave clock in AutoIt *(a quite terrible language that somehow supported openGL or something like that)* without being ever able to make it work.
+As soon as I woke up, I knew what needed to be done: **completely forget about it and go on with my day-to-day life**.
+A few weeks passed by, and in a moment of pure and complete anxiety-induced procrastination, I decided to start this project *(sinking in a few hours of otherwise productive time)*.
 
-After a few more months, I finally wrapped this project up and managed to publish it. I hope you enjoy it as much as I did while coding it.
+Some designs *(such as the ones including sine waves and triangles)* have been inspired by an exhibition from about 15 years ago at **Hangar Bicocca** I. Sadly, I cannot for the life of me remember the name of the artist or the exhibition, but I clearly remember going there multiple times just to have a look at a projection on a big screen of a series of time-telling animations.
+
+I recall trying to replicate the sine wave clock in AutoIt *(a quite terrible language that somehow supported openGL or something like that)* without being ever able to make it work. **But hey, those were my "early programmer days", so I guess it's fine.**
+
+After a many more months *(of, once again, procrastination and not studying)*, I finally wrapped this project up and managed to publish it. I hope you enjoy it as much as I did while coding it.
+
+I wish I could yell you more behind each and every idea and design, **but there is none**. I literally goofed around, trying my hand at different designs and animations, all **interpolating time from the real, actually readable time dimension to a completely warped domain of uselessness.**
+
+  Originally, a few more clocks have been made, but they have been removed because they either too boring or too readable *(go figure!)*. I am sad *(but not sorry)* for any designer reading this and crying.
 
 ## What's inside?
 
