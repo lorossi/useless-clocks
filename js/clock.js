@@ -2,7 +2,7 @@ import { XOR128 } from "./xor128.js";
 import { Color } from "./engine.js";
 
 class Clock {
-  constructor(width = 1000, height = 1000) {
+  constructor(width = 1000, height = 1000, random_time = false) {
     if (this.constructor === Clock)
       throw new TypeError("Abstract class 'Clock' cannot be instantiated.");
 
@@ -18,6 +18,22 @@ class Clock {
     const seed = new Date().getTime();
     this.rng = new XOR128(seed);
     this._renamePage();
+
+    if (random_time) {
+      this._time_offset = {
+        milliseconds: Math.random() * 1000,
+        seconds: Math.random() * 60,
+        minutes: Math.random() * 60,
+        hours: Math.random() * 24,
+      };
+    } else {
+      this._time_offset = {
+        milliseconds: 0,
+        seconds: 0,
+        minutes: 0,
+        hours: 0,
+      };
+    }
 
     this.preload();
   }
@@ -66,12 +82,14 @@ class Clock {
     const f_seconds = seconds + milliseconds / 1000;
     const f_minutes = minutes + f_seconds / 60;
     const f_hours = hours + f_minutes / 60;
-    return {
-      milliseconds: milliseconds,
-      seconds: f_seconds,
-      hours: f_hours,
-      minutes: f_minutes,
+    const date_obj = {
+      milliseconds: (milliseconds + this._time_offset.milliseconds) % 1000,
+      seconds: (f_seconds + this._time_offset.seconds) % 60,
+      minutes: (f_minutes + this._time_offset.minutes) % 60,
+      hours: (f_hours + this._time_offset.hours) % 24,
     };
+
+    return date_obj;
   }
 
   /**
@@ -667,7 +685,7 @@ class OnlyOneRightClock extends Clock {
       if (x === right_x && y === right_y) return Array(4).fill(0);
       return Array(4)
         .fill()
-        .map(() => this.rng.pick([-1, 1]));
+        .map(() => this.rng.random());
     });
   }
 
