@@ -12,7 +12,7 @@ class Sketch extends Engine {
 
     // recording options
     this._recording = false;
-    this._recording_duration = 300;
+    this._recording_duration = 600;
     this._recorded = 0;
 
     // callback for description
@@ -43,6 +43,28 @@ class Sketch extends Engine {
 
   draw() {
     const date = new Date();
+    this._drawClock(date);
+
+    if (
+      this._recording &&
+      this.frameCount - this._recording_started >= this._recording_duration
+    ) {
+      this._stopRecording();
+
+      this._recorded++;
+      if (this._auto_recording) {
+        if (this._recorded < ClockFactory.types.length) {
+          this._clock = this._clockFactory.createNext();
+          this._drawClock(date);
+          this._startRecording();
+        } else {
+          console.log("auto-recording finished");
+        }
+      }
+    }
+  }
+
+  _drawClock(date) {
     this._clock.update(date);
 
     // draw background
@@ -57,18 +79,6 @@ class Sketch extends Engine {
     this._clock.show(this.ctx);
 
     this.ctx.restore();
-
-    if (
-      this._recording &&
-      this.frameCount - this._recording_started >= this._recording_duration
-    ) {
-      this._stopRecording();
-      this._recorded++;
-      if (this._auto_recording && this._recorded < ClockFactory.types.length) {
-        this._clock = this._clockFactory.createNext();
-        this._startRecording();
-      }
-    }
   }
 
   click(x, y) {
@@ -79,6 +89,8 @@ class Sketch extends Engine {
   }
 
   keyPress(_, code) {
+    if (this._recording) return;
+
     switch (code) {
       case 101:
       case 69: // e
