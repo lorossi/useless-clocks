@@ -4,6 +4,19 @@
 
 [Try it out!]()
 
+[Instagram Post]()
+
+## Some Examples
+
+![gear-clock](/output/gear_clock.gif)
+![circle-clock](/output/circle_clock.gif)
+![start-clock](/output/star_clock.gif)
+![bar-clock](/output/bar_clock.gif)
+![sine-clock](/output/sine_clock.gif)
+![shuffled-clock](/output/shuffled_clock.gif)
+![triangle-clock](/output/triangle_clock.gif)
+![modulated-sines-clock](/output/modulated_sines_clock.gif)
+
 ## Wait what?
 
 I always try hard to describe the idea and the reasoning behind each and every of my project, embellishing the *(often boring)* process of coding with a bit of *(always real and never invented)* storytelling.
@@ -13,16 +26,19 @@ All my half-asleep brain could see in my spinning room was a bunch of changing c
 As soon as I woke up, I completely forgot about it and went on with my day to day life.
 
 A few weeks pass by, and in a moment of pure and complete procrastination, I decided to start this project.
-Some designs *(such as the ones including sine waves)* have been inspired by an exhibition from about 15 years ago at Hangar Bicocca in Milan, Italy.
+Some designs *(such as the ones including sine waves and the triangles one)* have been inspired by an exhibition from about 15 years ago at Hangar Bicocca in Milan, Italy. Sadly, I cannot for the life of me remember the name of the artist or the exhibition, but I clearly remember going there multiple times just to have a look at projection on a big screen of a series of time-telling animations.
+In my *"early programmer days"*, I recall trying to replicate the sine wave clock in AutoIt *(a quite terrible language that somehow supported openGL or something like that)* without being ever able to make it work.
+
+After a few more months, I finally wrapped this project up and managed to publish it. I hope you enjoy it as much as I did while coding it.
 
 ## What's inside?
 
 This project contains multiple useless clocks, each one representing the current time in a different, and completely unreadable, way.
-You can navigate the different clocks either clicking (or tapping) to the left and right of the screen, or using `q` and `e` keys.
+You can navigate the different clocks either clicking *(or tapping)* to the left and right of the screen, or using `q` and `e` keys.
 
-To see a description of each clock (reported here as well), click (or tap) the button below the clock itself or keep scrolling.
+To see a description of each clock *(reported here as well)*, click *(or tap)* the button below the clock itself or keep scrolling.
 
-### Descriptions
+### Descriptions (in alphabetical order)
 
 #### Angle Clock
 
